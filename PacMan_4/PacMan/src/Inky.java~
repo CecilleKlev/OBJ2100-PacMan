@@ -1,0 +1,146 @@
+import javafx.scene.paint.Color;
+
+public class Inky extends Ghost {
+	
+	public Inky(int r, int c, int s, PacManBoard pmb) {
+		
+		super(r, c, s, pmb);
+		color = Color.BLUE;
+		dir = Main.UP;
+
+	}
+
+	@Override
+	public void chase() {
+
+			// select a direction to move 
+			
+			m = new Maze(pmb);
+			
+			
+			Puck puck = pmb.puck;
+			
+			int pcol = puck.col;
+			int prow = puck.row;
+			
+			boolean found = m.solve(row, col, prow, pcol);
+			
+			if (found) {
+			if (col > 1) 
+				if (m.A[row][col-1] == 5)
+					dir = Main.LEFT;
+			
+			if (col < pmb.nx) 
+				if (m.A[row][col+1] == 5)
+					dir = Main.RIGHT;		
+			
+			if (row > 1) 
+				if (m.A[row-1][col] == 5)
+					dir = Main.UP;
+			
+			if (row < pmb.ny) 
+				if (m.A[row+1][col] == 5)
+					dir = Main.DOWN;
+			
+			}
+
+	}
+	@Override
+	public boolean solve(int r0, int c0, int r1, int c1)
+	{
+		boolean done = false;
+		int[] directions =    new int[4];
+		if (m.valid(r0,c0) != false)
+		{
+			m.A[r0][c0] = 3;   // cell has been tried
+			if (r0 == r1 && c0 == c1)
+				done = true; // maze is solved
+			else
+			{
+				// decide in whigh order to search:the maze
+
+				// directions to the puck;
+				int dr = r1 - r0;
+				int dc = c1 - c0;
+
+				if (Math.abs(dr) > Math.abs(dc)) {
+					// Greatest distance row-wise
+					//: go horizontal
+					if (dc >= 0) {
+						directions[0] = Main.RIGHT;
+						directions[1] = Main.LEFT;
+					}
+					else {
+						directions[1] = Main.LEFT; 
+						directions[0] = Main.RIGHT; 					
+					}
+					if (dr >= 0) {
+						directions[2] = Main.DOWN;
+						directions[3] = Main.UP;
+					}
+					else {
+						directions[3] = Main.UP;
+						directions[2] = Main.DOWN;
+					}
+
+
+				}
+				else {
+
+					//  Greatest distance column-wise
+					//: go verticalal
+
+					if (dr >= 0) {
+						directions[0] = Main.DOWN;
+						directions[1] = Main.UP;
+					}
+					else {
+						directions[0] = Main.UP;
+						directions[1] = Main.DOWN;			
+						//  Greatest distance column-wise
+						//: go horizontal
+
+					}
+					if (dc >= 0) {
+						directions[2] = Main.RIGHT; 
+						directions[3] = Main.LEFT;
+					}
+					else {
+						directions[2] = Main.LEFT; 
+						directions[3] = Main.RIGHT; 				
+					}
+				}
+				int ctr = 0;
+				while (!done && ctr < 4) {
+
+					switch(directions[ctr]) {
+					case Main.UP:
+						done=solve(r0-1,c0,  r1, c1); 
+						ctr++;
+						break;
+
+					case Main.LEFT:
+						done=solve(r0,c0-1,  r1, c1); 
+						ctr++;
+						break;
+
+					case Main.DOWN:
+						if (done == false)
+							done=solve(r0+1,c0,  r1, c1); 
+						ctr++;
+						break;
+
+					case Main.RIGHT:
+						done=solve(r0,c0+1,  r1, c1);
+						ctr++;
+						break;
+
+					}
+				}
+				if (done != false)
+					m.A[r0][c0] = 5;
+			}
+		}
+		return done;
+	} // end solve
+}
